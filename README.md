@@ -1,0 +1,9 @@
+# Listing All PDS (Partitioned Data Set) / PDSE Members on A z/OS System
+
+1. **LISTDSN.JCL** uses IEHLIST facility to list all data sets from all volumes and **LIST.rexx** to reformat the output to produce *SYS1.ZOS*.  
+
+2. **PDSDIRF.JCL** uses the Assembler program: **PDSDIRF.ASM** to parse *SYS1.ZOS* to find out members of those PDS/PDSE data sets, members' last updated dates -- for both LMD and Text -- as well as the TSO IDs who performed the last updates -- for Text only -- are also displayed.
+
+3. Make sure to have '**READ**' authority to all the PDS/PDSE data sets intended to list before submitting PDSDIRF.JCL. The process will be aborted due to security violations otherwise. If that happened, just restart the program from where was left undone by fixing the RACF problem first then removing those entries already done in SYS1.ZOS and changing the output file: SYS1.ZOS.MEMBERS's disposition from **DISP=SHR** to **DISP=MOD**.
+
+4. **Do remember to put a PDS or PDSE data set's name with the largest block size, typically 32760 -- for an LMD data set normally -- as the first entry in SYS1.ZOS.** The reason is that PDSDIRF.ASM uses SVC99, or Dynamic Allocation, to allocate each data set intended to look up of all PDS/PDSE entries in SYS1.ZOS and SVC99 keeps using the same temporary working storage for each of all the PDS/PDSE data sets in SYS1.ZOS. If you don't put the largest block size at the very beginning, the program ends up ABEND when it encounters a data set with bigger block size. This is also true if you want to rerun the program when it was stopped in the middle for some reasons -- having no 'READ' authority to a data set or dealing with a bigger block size that is larger than first set. Put an LMD whose block size if 32760 as the first entry in SYS1.ZOS when you have to restart the process since the program was adjourned halfway through.   
